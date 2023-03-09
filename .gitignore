@@ -1,0 +1,19 @@
+# Avoid pycache
+__pycache__
+
+# Avoid env
+sambosaenv
+
+# Avoid secrets
+credentials.py
+
+# Other stuff
+sambosa.egg-info
+node_modules
+bundle.js
+bundle.js.map
+credentials.py
+build
+.DS_Store
+package.json
+package-lock.json
