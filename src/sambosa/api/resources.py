@@ -17,4 +17,4 @@ def post_resources():
     # Set the new stock
     sambosa.sambosa_count = sambosa_stock
     # Return success and new sambosa count
-    return 200, jsonify(**{'sambosa_count': sambosa.sambosa_count})
+    return jsonify(**{'sambosa_count': sambosa.sambosa_count}), 200

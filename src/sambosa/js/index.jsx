@@ -116,7 +116,7 @@ const ServiceRow = styled(FlexRow)`
 const ServiceButton = styled(Button)(() => ({
   fontSize: "24px",
   fontFamily: "Orbitron",
-  fontWeight: "400",
+  fontWeight: "500",
   width: "160px",
   color: Colors.black,
   backgroundColor: Colors.fried,
