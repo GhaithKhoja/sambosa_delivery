@@ -16,6 +16,6 @@ app.config.from_envvar('sambosa_SETTINGS', silent=True)
 # (Reference http://flask.pocoo.org/docs/patterns/packages/)  We're
 # going to tell pylint and pycodestyle to ignore this coding style violation.
 import sambosa.views  # noqa: E402  pylint: disable=wrong-import-position
-import sambosa.model  # noqa: E402  pylint: disable=wrong-import-position
 import sambosa.api  # noqa: E402  pylint: disable=wrong-import-position
-import sambosa.utils # noqa: E402  pylint: disable=wrong-import-position
+# Number of sambosas Ghaith will distribute
+sambosa_count = 30
