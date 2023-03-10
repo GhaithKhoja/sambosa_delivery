@@ -17,9 +17,11 @@ class Index extends React.Component {
       zip: "",
       phone: "",
       instructions: "",
-      sambosaRequest: 1
+      sambosaRequest: 1,
+      deliveryDetails: {}
     };
     // Bind functions
+    this.handleSubmit = this.handleSubmit.bind(this)
     this.handleAddressChange = this.handleAddressChange.bind(this)
     this.handleZipChange = this.handleZipChange.bind(this)
     this.handlePhoneChange = this.handlePhoneChange.bind(this)
@@ -40,6 +42,26 @@ class Index extends React.Component {
       .then((data) => {
         this.setState({
           sambosaCount: data.sambosa_count,
+        });
+      })
+      .catch((error) => console.log(error));
+  }
+
+  // Handle sambosa order submit request
+  handleSubmit = () => {
+    fetch(
+        `/api/v1/order/?request=${this.state.sambosaRequest}&address=${this.state.address}&zip=${this.state.zip}&phone=${this.state.phone}&instructions=${this.state.instructions}`,
+        { credentials: "same-origin", method: "POST" }
+      )
+      .then((response) => {
+        if (!response.ok) throw Error(response.statusText);
+        return response.json();
+      })
+      .then((data) => {
+        this.setState({
+          deliveryDetails: data,
+          orderMode: true,
+          sambosaCount: this.state.sambosaCount - this.state.sambosaRequest
         });
       })
       .catch((error) => console.log(error));
@@ -95,7 +117,8 @@ class Index extends React.Component {
       zip,
       phone,
       instuctions,
-      sambosaRequest
+      sambosaRequest,
+      deliveryDetails
     } = this.state;
     // Render index
     return (
@@ -170,7 +193,7 @@ class Index extends React.Component {
                       onChange={this.handleInstructionsChange}
                     />
                     <SubmitButton 
-                      onClick={() => {this.closeModal();}}
+                      onClick={() => {this.closeModal(); this.handleSubmit();}}
                     >
                       Submit
                     </SubmitButton>

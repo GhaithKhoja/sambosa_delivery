@@ -46,7 +46,6 @@ def post_order():
     
     # POST delivery request
     delivery_details = requests.post(sambosa.endpoint, headers=sambosa.app.config["HEADERS"], json=request_body) # Create POST request
-    print(delivery_details)
     
     # If status code not 200 abort
     if delivery_details.status_code != 200:
