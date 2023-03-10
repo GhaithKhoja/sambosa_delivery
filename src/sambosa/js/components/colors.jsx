@@ -17,4 +17,5 @@ export const Colors = {
   fried: "#e19f3a",
   darkFried: "#735F40",
   lightFried: "#F4C989",
+  paper: "#fbfbf8",
 };
