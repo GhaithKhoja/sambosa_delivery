@@ -6,6 +6,7 @@ sambosaenv
 
 # Avoid secrets
 credentials.py
+config.py
 
 # Other stuff
 sambosa.egg-info
