@@ -19,3 +19,5 @@ import sambosa.views  # noqa: E402  pylint: disable=wrong-import-position
 import sambosa.api  # noqa: E402  pylint: disable=wrong-import-position
 # Number of sambosas Ghaith will distribute
 sambosa_count = 30
+# Doordash endpoint
+endpoint = "https://openapi.doordash.com/drive/v2/deliveries/"
