@@ -6,23 +6,19 @@ import sambosa
 
 @sambosa.app.route('/api/v1/order/', methods=['POST'])
 def post_order():
-    """Posts an order and returns the order ID."""
+    """Posts an order and returns the order info."""
     # Get request inputs
     sambosa_order = int(request.args.get("request"))
     if not sambosa_order or sambosa_order > sambosa.sambosa_count:
-        print('1')
         abort(400)
     address = request.args.get("address")
     if not address:
-        print('2')
         abort(400)
     zip = request.args.get("zip")
     if not zip:
-        print('3')
         abort(400)
     phone = request.args.get("phone")
     if not phone:
-        print('=4')
         abort(400)
     instructions = request.args.get("instructions")
     if not instructions:
@@ -56,3 +52,25 @@ def post_order():
 
     # Return
     return delivery_details.json(), 200
+
+@sambosa.app.route('/api/v1/order/', methods=['GET'])
+def get_order():
+    """Gets an order details and returns the order info."""
+    # Get request inputs
+    order_id = request.args.get("ID")
+    if not order_id:
+        abort(400)
+    
+    # GET delivery details
+    response = requests.get(sambosa.endpoint + order_id, headers=sambosa.app.config["HEADERS"]) # Create GET request
+    delivery_details = response.json()
+    
+    # If status code not 200 abort
+    if response.status_code != 200:
+        abort(response.status_code)
+
+    # Add google map api key
+    delivery_details['map_api_key'] = sambosa.app.config["MAP_API_KEY"]
+    
+    # Return
+    return delivery_details, 200

@@ -3,6 +3,7 @@ import styled from "@emotion/styled";
 import Button from "@mui/material/Button";
 import { Modal, Box, TextField } from "@mui/material";
 import { Colors } from "./components/colors";
+import MapContainer from "./components/map";
 import sambosaIcon from "../static/images/sambosa_icon.png";
 
 class Index extends React.Component {
@@ -12,23 +13,30 @@ class Index extends React.Component {
     this.state = {
       sambosaCount: [],
       orderMode: false,
-      modalOpen: false,
+      orderModalOpen: false,
+      trackModalOpen: false,
+      orderID: "",
       address: "",
       zip: "",
       phone: "",
       instructions: "",
       sambosaRequest: 1,
-      deliveryDetails: {}
+      deliveryDetails: {},
+      GOOGLE_API_KEY: ""
     };
     // Bind functions
-    this.handleSubmit = this.handleSubmit.bind(this)
+    this.handleOrderSubmit = this.handleOrderSubmit.bind(this)
+    this.handleTrackSubmit = this.handleTrackSubmit.bind(this)
+    this.handleIdChange = this.handleIdChange.bind(this)
     this.handleAddressChange = this.handleAddressChange.bind(this)
     this.handleZipChange = this.handleZipChange.bind(this)
     this.handlePhoneChange = this.handlePhoneChange.bind(this)
     this.handleInstructionsChange = this.handleInstructionsChange.bind(this)
     this.handleSambosaRequestChange = this.handleSambosaRequestChange.bind(this)
-    this.openModal = this.openModal.bind(this);
-    this.closeModal = this.closeModal.bind(this);
+    this.orderOpenModal = this.orderOpenModal.bind(this);
+    this.orderCloseModal = this.orderCloseModal.bind(this);
+    this.trackOpenModal = this.trackOpenModal.bind(this);
+    this.trackCloseModal = this.trackCloseModal.bind(this);
   }
 
   // Process when the webpage is called
@@ -45,10 +53,11 @@ class Index extends React.Component {
         });
       })
       .catch((error) => console.log(error));
+      // Handle websocket
   }
 
   // Handle sambosa order submit request
-  handleSubmit = () => {
+  handleOrderSubmit = () => {
     fetch(
         `/api/v1/order/?request=${this.state.sambosaRequest}&address=${this.state.address}&zip=${this.state.zip}&phone=${this.state.phone}&instructions=${this.state.instructions}`,
         { credentials: "same-origin", method: "POST" }
@@ -61,10 +70,60 @@ class Index extends React.Component {
         this.setState({
           deliveryDetails: data,
           orderMode: true,
+          orderID: data.external_delivery_id,
           sambosaCount: this.state.sambosaCount - this.state.sambosaRequest
         });
       })
       .catch((error) => console.log(error));
+      console.log('hi');
+      // Fetch API every 5 seconds
+      setInterval(() => {
+        fetch(
+          `/api/v1/order/?ID=${this.state.orderID}`,
+          { credentials: "same-origin", method: "GET" }
+        )
+        .then((response) => {
+          if (!response.ok) throw Error(response.statusText);
+          return response.json();
+        })
+        .then((data) => {
+          this.setState({
+            deliveryDetails: data,
+            orderMode: true,
+            GOOGLE_API_KEY: data.map_api_key
+          });
+        })
+        .catch((error) => console.log(error));
+      }, 5000); // 5 seconds
+      console.log('hi');
+  }
+
+  // Handle sambosa order track request
+  handleTrackSubmit = () => {
+      // Fetch API every 5 seconds
+      setInterval(() => {
+        fetch(
+          `/api/v1/order/?ID=${this.state.orderID}`,
+          { credentials: "same-origin", method: "GET" }
+        )
+        .then((response) => {
+          if (!response.ok) throw Error(response.statusText);
+          return response.json();
+        })
+        .then((data) => {
+          this.setState({
+            deliveryDetails: data,
+            orderMode: true,
+            GOOGLE_API_KEY: data.map_api_key
+          });
+        })
+        .catch((error) => console.log(error));
+      }, 5000); // 5 seconds
+  }
+
+  // Handle order id change
+  handleIdChange = (event) => {
+    this.setState({ orderID: event.target.value });
   }
 
   // Handle address change
@@ -97,13 +156,23 @@ class Index extends React.Component {
   }
 
   // Sets modal opened to true
-  openModal() {
-    this.setState({ modalOpen: true });
+  orderOpenModal() {
+    this.setState({ orderModalOpen: true });
   }
 
   // Sets modal opened to false
-  closeModal() {
-    this.setState({ modalOpen: false });
+  orderCloseModal() {
+    this.setState({ orderModalOpen: false });
+  }
+
+  // Sets modal opened to true
+  trackOpenModal() {
+    this.setState({ trackModalOpen: true });
+  }
+
+  // Sets modal opened to false
+  trackCloseModal() {
+    this.setState({ trackModalOpen: false });
   }
 
 
@@ -112,20 +181,33 @@ class Index extends React.Component {
     const { 
       sambosaCount,
       orderMode,
-      modalOpen,
+      orderModalOpen,
+      trackModalOpen,
+      orderID,
       address,
       zip,
       phone,
       instuctions,
       sambosaRequest,
-      deliveryDetails
+      deliveryDetails,
+      GOOGLE_API_KEY
     } = this.state;
     // Render index
     return (
       <>
         {orderMode ? 
           (
-            <span>hi</span>
+            <Col>
+              <div style={{ width: '720px', height: '360px', marginTop: '12vh' }}>
+                <MapContainer
+                  google={this.props.google}
+                />
+              </div>
+              <h1>Order ID: {deliveryDetails['external_delivery_id']}</h1>
+              <SaveIdSpan>Save this ID to able to track the order later!</SaveIdSpan>
+              <h1>Order Status: {deliveryDetails['delivery_status'].replace(/_/g, " ")}</h1>
+              <h1>Order Amount: {deliveryDetails['order_value']}</h1>
+            </Col>
           ) 
           : 
           (
@@ -138,13 +220,13 @@ class Index extends React.Component {
                 <SambosaSpan>{sambosaCount} Sambosas left!</SambosaSpan>
                 <OrderSpan>Order</OrderSpan>
                 <ServiceRow>
-                  <ServiceButton onClick={this.openModal}>New</ServiceButton>
-                  <ServiceButton>Track</ServiceButton>
+                  <ServiceButton onClick={this.orderOpenModal}>New</ServiceButton>
+                  <ServiceButton onClick={this.trackOpenModal}>Track</ServiceButton>
                 </ServiceRow>
               </Col>
               <Modal
-                open={modalOpen}
-                onClose={this.closeModal}
+                open={orderModalOpen}
+                onClose={this.orderCloseModal}
               >
                 <ModalBox>
                   <Col>
@@ -193,7 +275,30 @@ class Index extends React.Component {
                       onChange={this.handleInstructionsChange}
                     />
                     <SubmitButton 
-                      onClick={() => {this.closeModal(); this.handleSubmit();}}
+                      onClick={() => {this.orderCloseModal(); this.handleOrderSubmit();}}
+                    >
+                      Submit
+                    </SubmitButton>
+                  </Col>
+                </ModalBox>
+              </Modal>
+              <Modal
+                open={trackModalOpen}
+                onClose={this.trackCloseModal}
+              >
+                <ModalBox>
+                  <Col>
+                    <OrderSpan>Track an Order</OrderSpan>
+                    <InputText
+                      required
+                      id="filled-required"
+                      label="Order ID"
+                      variant="filled"
+                      value={orderID}
+                      onChange={this.handleIdChange}
+                    />
+                    <SubmitButton 
+                      onClick={() => {this.orderCloseModal(); this.handleTrackSubmit();}}
                     >
                       Submit
                     </SubmitButton>
@@ -261,6 +366,13 @@ const OrderSpan = styled.span`
   font-size: 36px;
   font-weight: 700;
   margin-top: 16px;
+`
+
+// Styled span to tell to track order
+const SaveIdSpan = styled.span`
+  font-size: 16px;
+  font-weight: 700;
+  color: ${Colors.brightRed};
 `
 
 // Styled row to display service buttons
